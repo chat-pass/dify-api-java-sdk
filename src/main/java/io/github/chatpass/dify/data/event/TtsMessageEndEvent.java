@@ -1,0 +1,15 @@
+package io.github.chatpass.dify.data.event;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public class TtsMessageEndEvent extends BaseMessageEvent {
+    /**
+     * 音频结束，空字符串
+     */
+    private String audio;
+}
