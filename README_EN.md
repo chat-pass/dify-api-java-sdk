@@ -5,6 +5,7 @@ Here's the English version of the README for the Dify API Java SDK:
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.chat-pass/dify-api-java-sdk.svg)](https://search.maven.org/search?q=g:io.github.chat-pass%20AND%20a:dify-api-java-sdk)
 [![License](https://img.shields.io/github/license/chat-pass/dify-api-java-sdk)](https://github.com/chat-pass/dify-api-java-sdk/blob/main/LICENSE)
 [![Java](https://img.shields.io/badge/Java-8%2B-blue)](https://www.java.com)
+[![codecov](https://codecov.io/gh/chat-pass/dify-api-java-sdk/branch/main/graph/badge.svg)](https://codecov.io/gh/chat-pass/dify-api-java-sdk)
 
 English | [简体中文](README.md)) | [日本語](README_JP.md)
 

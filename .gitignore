@@ -21,9 +21,70 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-/.idea/.gitignore
-/.idea/
-/target/
 
+# IDE files
+/.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+*.swp
+*.swo
+*~
+
+# Build outputs
+/target/
+/build/
+/out/
+/bin/
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# Gradle
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Test outputs
+/test-output/
+/.allure/
+/allure-results/
+
+# Code coverage
+/coverage/
+/.nyc_output/
+/jacoco.exec
+
+# Security files
+*.p12
+*.jks
+*.keystore
+application-local.properties
+application-dev.properties
+
+# Logs
+logs/
+*.log.*
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Cursor specific
 .specstory
 .cursorindexingignore
