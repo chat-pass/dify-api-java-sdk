@@ -73,6 +73,40 @@ Dify API Java Client 提供以下核心功能：
 </dependency>
 ```
 
+## 快速开始
+
+### 基本使用示例
+
+```java
+// 环境配置
+Map<String,String> envs = System.getenv();
+DifyChatApi difyChatApi = DifyApiFactory.newInstance(envs.get("DIFY_BASE_URL"),envs.get("DIFY_API_KEY")).newDifyChatApi();
+
+// 发送聊天消息
+ChatMessageRequest request = new ChatMessageRequest();
+request.setUser("test-user");
+request.setQuery("你好，请介绍一下自己");
+request.setResponseMode(ResponseMode.BLOCKING);
+
+ChatMessageResponse response = difyChatApi.sendChatMessage(request);
+System.out.println(response.getAnswer());
+```
+
+### 📚 完整示例文档
+
+本SDK提供了丰富的功能示例，涵盖所有主要使用场景：
+
+**[🔗 查看完整示例文档 →](EXAMPLES.md)**
+
+示例文档包含：
+- 🚀 **基础API示例** - 应用信息获取、参数配置
+- 💬 **对话型应用** - 阻塞式和流式聊天、消息处理  
+- ⚡ **工作流应用** - 执行、监控、日志管理
+- 📊 **数据集管理** - 知识库创建、文档管理、语义检索
+- 🎵 **音频处理** - 文本转语音、语音转文本
+- 📁 **文件管理** - 文件上传、处理
+- 🛠️ **最佳实践** - 错误处理、性能优化、并发处理
+
 ## API 参考
 
 ### 客户端类型
@@ -141,6 +175,7 @@ DIfyApiServiceGenerator.setHttpProxy("proxy.example.com", 8080, "username", "pas
 
 ## 相关链接
 
+- [📚 完整示例文档](EXAMPLES.md) - SDK使用示例和最佳实践
 - [Dify 官网](https://dify.ai)
 - [Dify 文档](https://docs.dify.ai)
 - [Dify GitHub](https://github.com/langgenius/dify)

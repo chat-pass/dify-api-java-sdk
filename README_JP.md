@@ -76,6 +76,40 @@ Dify API Java クライアントは、以下の主要な機能を提供します
 </dependency>
 ```
 
+## クイックスタート
+
+### 基本的な使用例
+
+```language=java
+// 環境設定
+Map<String,String> envs = System.getenv();
+DifyChatApi difyChatApi = DifyApiFactory.newInstance(envs.get("DIFY_BASE_URL"),envs.get("DIFY_API_KEY")).newDifyChatApi();
+
+// チャットメッセージの送信
+ChatMessageRequest request = new ChatMessageRequest();
+request.setUser("test-user");
+request.setQuery("こんにちは、自己紹介をお願いします");
+request.setResponseMode(ResponseMode.BLOCKING);
+
+ChatMessageResponse response = difyChatApi.sendChatMessage(request);
+System.out.println(response.getAnswer());
+```
+
+### 📚 完全なサンプルドキュメント
+
+この SDK は、すべての主要な使用例をカバーする豊富な機能例を提供します：
+
+**[🔗 完全なサンプルドキュメントを表示 →](EXAMPLES.md)**
+
+サンプルドキュメントには以下が含まれます：
+- 🚀 **基本API例** - アプリケーション情報取得、パラメータ設定
+- 💬 **会話型アプリケーション** - ブロッキングおよびストリーミングチャット、メッセージ処理  
+- ⚡ **ワークフローアプリケーション** - 実行、監視、ログ管理
+- 📊 **データセット管理** - ナレッジベース作成、ドキュメント管理、セマンティック検索
+- 🎵 **音声処理** - テキスト読み上げ、音声認識
+- 📁 **ファイル管理** - ファイルアップロード、処理
+- 🛠️ **ベストプラクティス** - エラー処理、パフォーマンス最適化、並行処理
+
 ## API リファレンス
 
 ### クライアントタイプ
@@ -144,6 +178,7 @@ DIfyApiServiceGenerator.setHttpProxy("proxy.example.com", 8080, "username", "pas
 
 ## 関連リンク
 
+- [📚 完全なサンプルドキュメント](EXAMPLES.md) - SDK使用例とベストプラクティス
 - [Dify 公式サイト](https://dify.ai)
 - [Dify ドキュメント](https://docs.dify.ai)
 - [Dify GitHub](https://github.com/langgenius/dify)

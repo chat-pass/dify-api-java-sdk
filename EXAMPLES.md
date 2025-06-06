@@ -944,7 +944,3 @@ public ChatMessageResponse sendMessageWithRetry(ChatMessageRequest request, int 
 - [Dify 开源项目](https://github.com/langgenius/dify)
 - [API参考文档](https://docs.dify.ai/v/zh-hans/guides/application-orchestrate/based-on-backend-apis)
 - [Java SDK源码](https://github.com/chat-pass/dify-api-java-sdk)
-
----
-
-**最后更新时间**: 2024年1月

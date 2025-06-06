@@ -74,6 +74,40 @@ The Dify API Java Client offers the following core features:
 </dependency>
 ```
 
+## Quick Start
+
+### Basic Usage Example
+
+```java
+// Environment configuration
+Map<String,String> envs = System.getenv();
+DifyChatApi difyChatApi = DifyApiFactory.newInstance(envs.get("DIFY_BASE_URL"),envs.get("DIFY_API_KEY")).newDifyChatApi();
+
+// Send chat message
+ChatMessageRequest request = new ChatMessageRequest();
+request.setUser("test-user");
+request.setQuery("Hello, please introduce yourself");
+request.setResponseMode(ResponseMode.BLOCKING);
+
+ChatMessageResponse response = difyChatApi.sendChatMessage(request);
+System.out.println(response.getAnswer());
+```
+
+### 📚 Complete Examples Documentation
+
+This SDK provides rich functional examples covering all major use cases:
+
+**[🔗 View Complete Examples Documentation →](EXAMPLES.md)**
+
+The examples documentation includes:
+- 🚀 **Basic API Examples** - Application info retrieval, parameter configuration
+- 💬 **Conversational Applications** - Blocking and streaming chat, message handling  
+- ⚡ **Workflow Applications** - Execution, monitoring, log management
+- 📊 **Dataset Management** - Knowledge base creation, document management, semantic retrieval
+- 🎵 **Audio Processing** - Text-to-speech, speech-to-text
+- 📁 **File Management** - File upload, processing
+- 🛠️ **Best Practices** - Error handling, performance optimization, concurrent processing
+
 ## API Reference
 
 ### Client Types
@@ -142,6 +176,7 @@ This project is licensed under the [Apache License 2.0](LICENSE).
 
 ## Related Links
 
+- [📚 Complete Examples Documentation](EXAMPLES.md) - SDK usage examples and best practices
 - [Dify Official Website](https://dify.ai)
 - [Dify Documentation](https://docs.dify.ai)
 - [Dify GitHub](https://github.com/langgenius/dify)
