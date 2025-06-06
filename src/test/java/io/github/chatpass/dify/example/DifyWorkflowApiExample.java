@@ -46,10 +46,10 @@ public class DifyWorkflowApiExample {
                 .responseMode(ResponseMode.BLOCKING)
                 .user("test_user_" + System.currentTimeMillis())
                 .build();
-        
+
         WorkflowRunResponse response = difyWorkflowApi.runWorkflow(request);
         System.out.println("执行workflow响应: " + response);
-        
+
         // 保存workflowRunId和taskId用于后续测试
         workflowRunId = response.getWorkflowRunId();
         taskId = response.getTaskId();

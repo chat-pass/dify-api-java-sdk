@@ -16,11 +16,12 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 
 @Slf4j
-public class DifyWorkflowApi {
+public class DifyWorkflowApi extends BaseApi{
     private final DifyWorkflowApiService workflowApiService;
 
     public DifyWorkflowApi(String baseUrl, String apiKey) {
-        this.workflowApiService = DIfyApiServiceGenerator.createService(DifyWorkflowApiService.class,apiKey,baseUrl);;
+        super(baseUrl, apiKey);
+        this.workflowApiService = createService(DifyWorkflowApiService.class);
     }
 
     public WorkflowRunResponse runWorkflow(WorkflowRunRequest request) {

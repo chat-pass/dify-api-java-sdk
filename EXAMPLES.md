@@ -24,6 +24,144 @@
 export DIFY_BASE_URL="https://api.dify.ai/v1"
 export DIFY_API_KEY="your-api-key-here"
 ```
+## 🚀 **完整应用示例**
+
+### **企业级聊天应用**
+```java
+import io.github.chatpass.dify.config.DifyApiConfig;
+import io.github.chatpass.dify.api.DifyChatApi;
+import io.github.chatpass.dify.util.MetricsUtils;
+import io.github.chatpass.dify.util.RetryUtils;
+
+public class ChatService {
+    private final DifyChatApi chatApi;
+    
+    public ChatService(String baseUrl, String apiKey) {
+        // 企业级配置
+        DifyApiConfig config = DifyApiConfig.builder(baseUrl, apiKey)
+            .callTimeout(30)                    // 30秒超时
+            .readTimeout(60)                    // 60秒读取超时
+            .retryConfig(3, 1000)              // 3次重试
+            .enableRetry(true)                 // 启用重试
+            .enableLogging(true)               // 启用日志
+            .build();
+            
+        this.chatApi = new DifyChatApi(config);
+    }
+    
+    public ChatResponse sendMessage(String user, String message) {
+        // 构建请求
+        ChatMessageRequest request = new ChatMessageRequest();
+        request.setUser(user);
+        request.setQuery(message);
+        
+        // 带监控和重试的API调用
+        try (MetricsUtils.Timer timer = new MetricsUtils.Timer("chatService.sendMessage")) {
+            return RetryUtils.executeWithDefaultRetry(() -> {
+                ChatMessageResponse response = chatApi.sendChatMessage(request);
+                return new ChatResponse(response.getAnswer(), response.getMessageId());
+            });
+        } catch (Exception e) {
+            timer.markError();
+            throw new RuntimeException("Failed to send chat message", e);
+        }
+    }
+    
+    public void printPerformanceStats() {
+        MetricsUtils.printMetrics();
+    }
+    
+    // 内部响应类
+    public static class ChatResponse {
+        private final String answer;
+        private final String messageId;
+        
+        public ChatResponse(String answer, String messageId) {
+            this.answer = answer;
+            this.messageId = messageId;
+        }
+        
+        // getters...
+    }
+}
+```
+
+### **使用企业级聊天服务**
+```java
+public class Application {
+    public static void main(String[] args) {
+        // 初始化服务
+        ChatService chatService = new ChatService(
+            "https://api.dify.ai", 
+            "your-api-key"
+        );
+        
+        // 发送消息
+        try {
+            ChatResponse response = chatService.sendMessage("user123", "Hello AI!");
+            System.out.println("AI回复: " + response.getAnswer());
+            
+            // 批量测试
+            for (int i = 0; i < 10; i++) {
+                chatService.sendMessage("user" + i, "Test message " + i);
+            }
+            
+            // 查看性能统计
+            chatService.printPerformanceStats();
+            
+        } catch (Exception e) {
+            System.err.println("发送消息失败: " + e.getMessage());
+        }
+    }
+}
+```
+
+## 📝 **最佳实践**
+
+### **1. 配置管理**
+```java
+// ✅ 推荐：使用配置类
+DifyApiConfig config = DifyApiConfig.builder(baseUrl, apiKey)
+    .callTimeout(30)
+    .enableRetry(true)
+    .build();
+
+// ⚠️ 可用：传统方式
+DifyApiFactory factory = DifyApiFactory.newInstance(baseUrl, apiKey);
+```
+
+### **2. 错误处理**
+```java
+// ✅ 推荐：使用重试机制
+try {
+    return RetryUtils.executeWithDefaultRetry(() -> api.call());
+} catch (Exception e) {
+    log.error("API call failed after retries", e);
+    throw new ServiceException("Service temporarily unavailable", e);
+}
+```
+
+### **3. 性能监控**
+```java
+// ✅ 推荐：监控所有关键API调用
+try (MetricsUtils.Timer timer = new MetricsUtils.Timer("criticalOperation")) {
+    // 关键操作
+    return performOperation();
+} catch (Exception e) {
+    timer.markError();
+    throw e;
+}
+```
+
+### **4. 资源管理**
+```java
+// ✅ 推荐：定期清理监控数据
+@Scheduled(fixedRate = 3600000) // 每小时
+public void cleanupMetrics() {
+    MetricsUtils.printMetrics();  // 打印统计
+    MetricsUtils.clearMetrics();  // 清空数据
+}
+```
 
 ## 基础API示例
 
@@ -287,7 +425,7 @@ public class DifyWorkflowApiExample {
 
     public static void main(String[] args) {
         final Map<String, String> envs = System.getenv();
-        difyWorkflowApi = DifyApiFactory.newInstance(envs.get("DIFY_BASE_URL"),envs.get("DIFY_API_KEY")).newDifyWorkflowApi();
+        difyWorkflowApi = DifyApiFactory.newInstance(envs.get("DIFY_BASE_URL"), envs.get("DIFY_API_KEY")).newDifyWorkflowApi();
 
         try {
             runWorkflowExample();
@@ -307,14 +445,14 @@ public class DifyWorkflowApiExample {
         inputs.put("query", "请帮我翻译这句话：Hello World");
 
         WorkflowRunRequest request = WorkflowRunRequest.builder()
-                .inputs(inputs)
-                .responseMode(ResponseMode.BLOCKING)
-                .user("test_user_" + System.currentTimeMillis())
-                .build();
-        
+            .inputs(inputs)
+            .responseMode(ResponseMode.BLOCKING)
+            .user("test_user_" + System.currentTimeMillis())
+            .build();
+
         WorkflowRunResponse response = difyWorkflowApi.runWorkflow(request);
         System.out.println("执行workflow响应: " + response);
-        
+
         // 保存workflowRunId和taskId用于后续测试
         workflowRunId = response.getWorkflowRunId();
         taskId = response.getTaskId();
@@ -327,13 +465,13 @@ public class DifyWorkflowApiExample {
 
     private static void stopWorkflowExample() {
         SimpleUserRequest request = SimpleUserRequest.builder()
-                .user("test_user_" + System.currentTimeMillis())
-                .build();
+            .user("test_user_" + System.currentTimeMillis())
+            .build();
 
         WorkflowStopResponse response = difyWorkflowApi.stopWorkflow(taskId, request);
         System.out.println("停止workflow响应: " + response);
     }
-    
+
     private static void getworkflowlogsExample() {
         WorkflowLogListResponse response = difyWorkflowApi.getWorkflowLogs(null, null, 1, 10);
         System.out.println("获取workflow日志列表响应: " + response);
@@ -464,11 +602,8 @@ import io.github.chatpass.dify.DifyApiFactory;
 import io.github.chatpass.dify.api.DifyDatasetsApi;
 import io.github.chatpass.dify.data.request.datasets.*;
 import io.github.chatpass.dify.data.response.datasets.*;
-import io.github.chatpass.dify.exception.DifyApiError;
 import io.github.chatpass.dify.exception.DifyApiException;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 
 public class DifyDatasetsApiExample {
@@ -482,7 +617,7 @@ public class DifyDatasetsApiExample {
 
     public static void main(String[] args) {
         final Map<String, String> envs = System.getenv();
-        difyDatasetsApi = DifyApiFactory.newInstance(envs.get("DIFY_BASE_URL"),envs.get("DIFY_API_KEY")).newDifyDatasetsApi();
+        difyDatasetsApi = DifyApiFactory.newInstance(envs.get("DIFY_BASE_URL"), envs.get("DIFY_API_KEY")).newDifyDatasetsApi();
         try {
             createDatasetExample();
             updateDatasetExample();
@@ -524,12 +659,12 @@ public class DifyDatasetsApiExample {
 
     private static void createDatasetExample() {
         CreateDatasetRequest request = CreateDatasetRequest.builder()
-                .name("测试知识库" + System.currentTimeMillis())
-                .description("这是一个测试知识库")
-                .indexingTechnique("high_quality")
-                .permission("only_me")
-                .provider("vendor")
-                .build();
+            .name("测试知识库" + System.currentTimeMillis())
+            .description("这是一个测试知识库")
+            .indexingTechnique("high_quality")
+            .permission("only_me")
+            .provider("vendor")
+            .build();
 
         DatasetResponse response = difyDatasetsApi.createDataset(request);
         System.out.println("创建知识库响应: " + response);
@@ -538,11 +673,11 @@ public class DifyDatasetsApiExample {
 
     private static void updateDatasetExample() {
         UpdateDatasetRequest request = UpdateDatasetRequest.builder()
-                .name("更新后的测试知识库")
-                .description("这是一个更新后的测试知识库")
-                .indexingTechnique("high_quality")
-                .permission("only_me")
-                .build();
+            .name("更新后的测试知识库")
+            .description("这是一个更新后的测试知识库")
+            .indexingTechnique("high_quality")
+            .permission("only_me")
+            .build();
 
         DatasetResponse response = difyDatasetsApi.updateDataset(datasetId, request);
         System.out.println("更新知识库响应: " + response);
@@ -581,7 +716,7 @@ public class DifyDatasetsApiDocumentByFileExample {
 
     public static void main(String[] args) {
         final Map<String, String> envs = System.getenv();
-        difyDatasetsApi = DifyApiFactory.newInstance(envs.get("DIFY_BASE_URL"),envs.get("DIFY_API_KEY")).newDifyDatasetsApi();
+        difyDatasetsApi = DifyApiFactory.newInstance(envs.get("DIFY_BASE_URL"), envs.get("DIFY_API_KEY")).newDifyDatasetsApi();
         try {
             createDatasetExample();
             createDocumentByFileExample();
@@ -605,23 +740,23 @@ public class DifyDatasetsApiDocumentByFileExample {
         File file = tempFile.toFile();
 
         CreateDocumentByFileRequest request = CreateDocumentByFileRequest.builder()
-                .indexingTechnique("high_quality")
-                .processRule(ProcessRule.builder()
-                        .rules(ProcessRule.Rules.builder()
-                                .preProcessingRules(Arrays.asList(
-                                        ProcessRule.Rules.PreProcessingRule.builder().id("remove_extra_spaces").enabled(true).build(),
-                                        ProcessRule.Rules.PreProcessingRule.builder().id("remove_urls_emails").enabled(true).build()
-                                ))
-                                .segmentation(ProcessRule.Rules.Segmentation.builder()
-                                        .separator("###")
-                                        .maxTokens(500)
-                                        .build())
-                                .build())
-                        .mode("custom")
+            .indexingTechnique("high_quality")
+            .processRule(ProcessRule.builder()
+                .rules(ProcessRule.Rules.builder()
+                    .preProcessingRules(Arrays.asList(
+                        ProcessRule.Rules.PreProcessingRule.builder().id("remove_extra_spaces").enabled(true).build(),
+                        ProcessRule.Rules.PreProcessingRule.builder().id("remove_urls_emails").enabled(true).build()
+                    ))
+                    .segmentation(ProcessRule.Rules.Segmentation.builder()
+                        .separator("###")
+                        .maxTokens(500)
                         .build())
-                .docForm("text_model")
-                .docLanguage("Chinese")
-                .build();
+                    .build())
+                .mode("custom")
+                .build())
+            .docForm("text_model")
+            .docLanguage("Chinese")
+            .build();
 
         try {
             DocumentResponse response = difyDatasetsApi.createDocumentByFile(datasetId, file, request);

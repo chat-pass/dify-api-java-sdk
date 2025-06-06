@@ -38,10 +38,10 @@ public class DIfyApiServiceGenerator {
                     .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
                     .configure(DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS, false)
                     .configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false)
-                    .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-    );
+                    .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE));
 
-    private static final Converter<ResponseBody, DifyApiError> errorBodyConverter = (Converter<ResponseBody, DifyApiError>) converterFactory.responseBodyConverter(DifyApiError.class, new Annotation[0], null);
+    private static final Converter<ResponseBody, DifyApiError> errorBodyConverter = (Converter<ResponseBody, DifyApiError>) converterFactory
+            .responseBodyConverter(DifyApiError.class, new Annotation[0], null);
 
     public static OkHttpClient createDefaultHttpClient() {
         return new OkHttpClient.Builder()//
@@ -58,7 +58,8 @@ public class DIfyApiServiceGenerator {
 
     /**
      * Sets http proxy for the shared client.
-     * <p>If you need to use a proxy to connect to the internet,
+     * <p>
+     * If you need to use a proxy to connect to the internet,
      * you can use this method to set it.
      * <p>
      * <ul>
@@ -74,8 +75,12 @@ public class DIfyApiServiceGenerator {
      * @param port     the port
      * @param username the username
      * @param pwd      the pwd
-     * @see <a href="https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/proxy-selector/">Proxy Selector</a>
-     * @see <a href="https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/proxy-authenticator/">Proxy Authenticator</a>
+     * @see <a href=
+     *      "https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/proxy-selector/">Proxy
+     *      Selector</a>
+     * @see <a href=
+     *      "https://square.github.io/okhttp/4.x/okhttp/okhttp3/-ok-http-client/-builder/proxy-authenticator/">Proxy
+     *      Authenticator</a>
      */
     public static void setHttpProxy(String host, int port, String username, String pwd) {
         Objects.requireNonNull(host, "Host cannot be null");
@@ -86,7 +91,7 @@ public class DIfyApiServiceGenerator {
                 .build();
 
         if (username == null || pwd == null) {
-            //Without authentication
+            // Without authentication
             return;
         }
 
@@ -127,17 +132,18 @@ public class DIfyApiServiceGenerator {
                 throw new DifyApiException(apiError);
             }
         } catch (IOException e) {
-            log.error("exceute sync error {}",e);
+            log.error("exceute sync error {}", e);
             throw new DifyApiException(e);
         }
     }
 
-    public static void executeStreamRequest(Call<ResponseBody> call, LineProcessor lineProcessor, Consumer<Throwable> errorHandler) {
+    public static void executeStreamRequest(Call<ResponseBody> call, LineProcessor lineProcessor,
+            Consumer<Throwable> errorHandler) {
         call.enqueue(new Callback<ResponseBody>() {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable e) {
-                log.error("stream request error {}",e);
+                log.error("stream request error {}", e);
                 errorHandler.accept(e);
             }
 
@@ -147,10 +153,10 @@ public class DIfyApiServiceGenerator {
                     try {
                         String errorBody = response.body() != null ? response.body().string() : "";
                         DifyApiException exception = createDifyApiException(response.code(), errorBody);
-                        log.error("stream request error {}",exception);
+                        log.error("stream request error {}", exception);
                         errorHandler.accept(exception);
                     } catch (IOException e) {
-                        log.error("stream request error {}",e);
+                        log.error("stream request error {}", e);
                         errorHandler.accept(e);
                     }
                     return;
@@ -163,7 +169,8 @@ public class DIfyApiServiceGenerator {
                         return;
                     }
 
-                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(responseBody.byteStream(), StandardCharsets.UTF_8))) {
+                    try (BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(responseBody.byteStream(), StandardCharsets.UTF_8))) {
                         String line;
                         while ((line = reader.readLine()) != null) {
                             if (line.isEmpty()) {
@@ -177,7 +184,7 @@ public class DIfyApiServiceGenerator {
                         }
                     }
                 } catch (Exception e) {
-                    log.error("process stream response error {}",e);
+                    log.error("process stream response error {}", e);
                     errorHandler.accept(e);
                 }
             }
@@ -189,15 +196,15 @@ public class DIfyApiServiceGenerator {
         String errorMessage = message;
         try {
             if (message != null && !message.isEmpty() && JSONUtils.isValidJson(message)) {
-                DifyApiError error = JSONUtils.fromJson(message,DifyApiError.class);
-                if(error != null){
+                DifyApiError error = JSONUtils.fromJsonSafely(message, DifyApiError.class);
+                if (error != null) {
                     return new DifyApiException(error);
                 }
             }
-        }catch (Exception e){
-
+        } catch (Exception e) {
+            // 记录解析错误，但继续使用原始消息
         }
-        DifyApiError difyApiError = new DifyApiError(code,errorCode,errorMessage);
+        DifyApiError difyApiError = new DifyApiError(code, errorCode, errorMessage);
         return new DifyApiException(difyApiError);
     }
 
@@ -234,17 +241,19 @@ public class DIfyApiServiceGenerator {
     public interface EventProcessor {
         /**
          * 处理事件
-         * @param data 事件数据
+         *
+         * @param data      事件数据
          * @param eventType 事件类型
          */
         void process(String data, String eventType);
     }
+
     public static DifyApiError getDifyApiError(Response<?> response) throws DifyApiException, IOException {
         Objects.requireNonNull(errorBodyConverter);
         ResponseBody responseBody = response.errorBody();
         Objects.requireNonNull(responseBody);
-        if(responseBody.contentLength() <= 0){
-            return new DifyApiError(response.code(),response.message());
+        if (responseBody.contentLength() <= 0) {
+            return new DifyApiError(response.code(), response.message());
         }
         return errorBodyConverter.convert(responseBody);
     }
