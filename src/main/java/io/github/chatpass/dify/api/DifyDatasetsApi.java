@@ -2,9 +2,11 @@ package io.github.chatpass.dify.api;
 
 import io.github.chatpass.dify.DIfyApiServiceGenerator;
 import io.github.chatpass.dify.data.request.datasets.*;
+import io.github.chatpass.dify.data.request.datasets.CreateSegmentsRequest.Segment;
 import io.github.chatpass.dify.data.response.datasets.*;
 import io.github.chatpass.dify.service.DifyDatasetsApiService;
 import io.github.chatpass.dify.util.JSONUtils;
+import io.github.chatpass.dify.util.ValidationUtils;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -29,6 +31,10 @@ public class DifyDatasetsApi extends BaseApi{
      * @return 知识库详情
      */
     public DatasetResponse createDataset(CreateDatasetRequest request) {
+
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getName(), "name");
+
         log.debug("create dataset: request={}", request);
         return DIfyApiServiceGenerator.executeSync(datasetsApiService.createDataset(request));
     }
@@ -41,6 +47,10 @@ public class DifyDatasetsApi extends BaseApi{
      * @return 知识库详情
      */
     public DatasetResponse updateDataset(String datasetId, UpdateDatasetRequest request) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getName(), "name");
+
         log.debug("update dataset: datasetId={}, request={}", datasetId, request);
         return DIfyApiServiceGenerator.executeSync(datasetsApiService.updateDataset(datasetId, request));
     }
@@ -64,6 +74,7 @@ public class DifyDatasetsApi extends BaseApi{
      * @return 知识库详情
      */
     public DatasetResponse getDataset(String datasetId) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
         log.info("get dataset info: datasetId={}", datasetId);
         return DIfyApiServiceGenerator.executeSync(datasetsApiService.getDataset(datasetId));
     }
@@ -74,6 +85,7 @@ public class DifyDatasetsApi extends BaseApi{
      * @param datasetId 知识库ID
      */
     public void deleteDataset(String datasetId) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
         log.debug("delete dataset: datasetId={}", datasetId);
         DIfyApiServiceGenerator.executeSync(datasetsApiService.deleteDataset(datasetId));
     }
@@ -86,6 +98,13 @@ public class DifyDatasetsApi extends BaseApi{
      * @return 文档详情
      */
     public DocumentResponse createDocumentByText(String datasetId, CreateDocumentByTextRequest request) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getName(), "name");
+        ValidationUtils.validateNonBlank(request.getText(), "text");
+        ValidationUtils.validateNonBlank(request.getIndexingTechnique(), "indexingTechnique");
+        ValidationUtils.validateNonNull(request.getProcessRule(), "processRule");
+
         log.debug("create document by text: datasetId={}, request={}", datasetId, request);
         return DIfyApiServiceGenerator.executeSync(datasetsApiService.createDocumentByText(datasetId, request));
     }
@@ -99,6 +118,13 @@ public class DifyDatasetsApi extends BaseApi{
      * @return 文档详情
      */
     public DocumentResponse createDocumentByFile(String datasetId, File file, CreateDocumentByFileRequest request) {
+
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateFile(file, "file");
+        ValidationUtils.validateNonBlank(request.getIndexingTechnique(), "indexingTechnique");
+        ValidationUtils.validateNonNull(request.getProcessRule(), "processRule");
+
         log.debug("create document by file: datasetId={}, fileName={}, request={}", datasetId, file.getName(), request);
 
         RequestBody fileRequestBody = RequestBody.create(file, MediaType.parse("multipart/form-data"));
@@ -119,6 +145,10 @@ public class DifyDatasetsApi extends BaseApi{
      */
     public DocumentResponse updateDocumentByText(String datasetId, String documentId,
             UpdateDocumentByTextRequest request) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(documentId, "documentId");
+        ValidationUtils.validateNonNull(request, "request");
+
         log.debug("update document by text: datasetId={}, documentId={}, request={}", datasetId, documentId, request);
         return DIfyApiServiceGenerator
                 .executeSync(datasetsApiService.updateDocumentByText(datasetId, documentId, request));
@@ -135,6 +165,11 @@ public class DifyDatasetsApi extends BaseApi{
      */
     public DocumentResponse updateDocumentByFile(String datasetId, String documentId, File file,
             UpdateDocumentByFileRequest request) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(documentId, "documentId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateFile(file, "file");
+
         log.debug("update document by file: datasetId={}, documentId={}, fileName={}, request={}", datasetId,
                 documentId, file.getName(), request);
         RequestBody requestBody = RequestBody.create(file, MediaType.parse("multipart/form-data"));
@@ -152,6 +187,8 @@ public class DifyDatasetsApi extends BaseApi{
      * @return 文档索引状态信息
      */
     public DocumentIndexingStatusResponse getDocumentIndexingStatus(String datasetId, String batch) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(batch, "batch");
         log.debug("get document indexing status: datasetId={}, batch={}", datasetId, batch);
         return DIfyApiServiceGenerator.executeSync(datasetsApiService.getDocumentIndexingStatus(datasetId, batch));
     }
@@ -163,6 +200,8 @@ public class DifyDatasetsApi extends BaseApi{
      * @param documentId 文档ID
      */
     public void deleteDocument(String datasetId, String documentId) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(documentId, "documentId");
         log.debug("delete document: datasetId={}, documentId={}", datasetId, documentId);
         DIfyApiServiceGenerator.executeSync(datasetsApiService.deleteDocument(datasetId, documentId));
     }
@@ -177,6 +216,7 @@ public class DifyDatasetsApi extends BaseApi{
      * @return 文档列表响应
      */
     public DocumentListResponse listDocuments(String datasetId, String keyword, Integer page, Integer limit) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
         log.debug("query document list: datasetId={}", datasetId);
         return DIfyApiServiceGenerator.executeSync(datasetsApiService.listDocuments(datasetId, keyword, page, limit));
     }
@@ -191,6 +231,14 @@ public class DifyDatasetsApi extends BaseApi{
      */
     public CreateSegmentResponse createDocumentSegments(String datasetId, String documentId,
             CreateSegmentsRequest request) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(documentId, "documentId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonNull(request.getSegments(), "segments");
+        for (Segment segments : request.getSegments()) {
+            ValidationUtils.validateNonBlank(segments.getContent(), "content");
+        }
+
         log.debug("create document segments: datasetId={}, documentId={}, request={}", datasetId, documentId, request);
         return DIfyApiServiceGenerator
                 .executeSync(datasetsApiService.createDocumentSegments(datasetId, documentId, request));
@@ -207,6 +255,13 @@ public class DifyDatasetsApi extends BaseApi{
      */
     public UpdateSegmentResponse updateDocumentSegment(String datasetId, String documentId, String segmentId,
             UpdateSegmentsRequest request) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(documentId, "documentId");
+        ValidationUtils.validateNonBlank(segmentId, "segmentId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonNull(request.getSegment(), "segment");
+        ValidationUtils.validateNonBlank(request.getSegment().getContent(), "content");
+
         log.debug("update document segments: datasetId={}, documentId={}, segmentId={} request={}", datasetId,
                 documentId, segmentId, request);
         return DIfyApiServiceGenerator
@@ -226,6 +281,8 @@ public class DifyDatasetsApi extends BaseApi{
      */
     public SegmentListResponse listDocumentSegments(String datasetId, String documentId, String keyword, String status,
             Integer page, Integer limit) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(documentId, "documentId");
         log.debug("query document segments: datasetId={}, documentId={}, keyword={}", datasetId, documentId, keyword);
         return DIfyApiServiceGenerator.executeSync(
                 datasetsApiService.listDocumentSegments(datasetId, documentId, keyword, status, page, limit));
@@ -239,6 +296,9 @@ public class DifyDatasetsApi extends BaseApi{
      * @param segmentId  文档分段ID
      */
     public void deleteDocumentSegment(String datasetId, String documentId, String segmentId) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(documentId, "documentId");
+        ValidationUtils.validateNonBlank(segmentId, "segmentId");
         log.debug("query document segments: datasetId={}, documentId={}, segmentId={}", datasetId, documentId,
                 segmentId);
         DIfyApiServiceGenerator.executeSync(datasetsApiService.deleteDocumentSegment(datasetId, documentId, segmentId));
@@ -255,6 +315,12 @@ public class DifyDatasetsApi extends BaseApi{
      */
     public ChildChunkResponse createChildChunk(String datasetId, String documentId, String segmentId,
             SubmitChildChunkRequest request) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(documentId, "documentId");
+        ValidationUtils.validateNonBlank(segmentId, "segmentId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getContent(), "content");
+
         log.debug("create document child chunk: datasetId={}, documentId={}, segmentId={}, request={}", datasetId,
                 documentId, segmentId, request);
         return DIfyApiServiceGenerator
@@ -273,6 +339,12 @@ public class DifyDatasetsApi extends BaseApi{
      */
     public ChildChunkResponse updateChildChunk(String datasetId, String documentId, String segmentId,
             String childChunkId, SubmitChildChunkRequest request) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(documentId, "documentId");
+        ValidationUtils.validateNonBlank(segmentId, "segmentId");
+        ValidationUtils.validateNonBlank(childChunkId, "childChunkId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getContent(), "content");
         log.debug("create document child chunk: datasetId={}, documentId={}, segmentId={}, childChunkId={}, request={}",
                 datasetId, documentId, segmentId, childChunkId, request);
         return DIfyApiServiceGenerator.executeSync(
@@ -292,6 +364,9 @@ public class DifyDatasetsApi extends BaseApi{
      */
     public ChildChunkListResponse listChildChunks(String datasetId, String documentId, String segmentId,
             String keyword, Integer page, Integer limit) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(documentId, "documentId");
+        ValidationUtils.validateNonBlank(segmentId, "segmentId");
         log.debug("query document child chunk list: datasetId={}, documentId={}, segmentId={}, keyword={}",
                 datasetId, documentId, segmentId, keyword);
         return DIfyApiServiceGenerator.executeSync(
@@ -307,6 +382,10 @@ public class DifyDatasetsApi extends BaseApi{
      * @param childChunkId 子分段ID
      */
     public void deleteChildChunk(String datasetId, String documentId, String segmentId, String childChunkId) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(documentId, "documentId");
+        ValidationUtils.validateNonBlank(segmentId, "segmentId");
+        ValidationUtils.validateNonBlank(childChunkId, "childChunkId");
         log.debug("delete document child chunk: datasetId={}, documentId={}, segmentId={}, childChunkId={}",
                 datasetId, documentId, segmentId, childChunkId);
         DIfyApiServiceGenerator
@@ -321,6 +400,8 @@ public class DifyDatasetsApi extends BaseApi{
      * @return 上传文件响应
      */
     public DocumentUploadFileResponse getDocumentUploadFile(String datasetId, String documentId) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(documentId, "documentId");
         log.info("get document upload file info: datasetId={}, documentId={}", datasetId, documentId);
         return DIfyApiServiceGenerator.executeSync(datasetsApiService.getDocumentUploadFile(datasetId, documentId));
     }
@@ -333,6 +414,12 @@ public class DifyDatasetsApi extends BaseApi{
      * @return 元数据响应
      */
     public MetadataResponse createMetadata(String datasetId, CreateMetadataRequest request) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getName(), "name");
+        ValidationUtils.validateNonBlank(request.getType(), "type");
+
+
         log.info("create dataset metadata: datasetId={}, request={}", datasetId, request);
         return DIfyApiServiceGenerator.executeSync(datasetsApiService.createMetadata(datasetId, request));
     }
@@ -346,6 +433,11 @@ public class DifyDatasetsApi extends BaseApi{
      * @return 元数据响应
      */
     public MetadataResponse updateMetadata(String datasetId, String metadataId, UpdateMetadataRequest request) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(metadataId, "metadataId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getName(), "name");
+
         log.info("update dataset metadata: datasetId={}, metadataId={}, request={}", datasetId, metadataId, request);
         return DIfyApiServiceGenerator.executeSync(datasetsApiService.updateMetadata(datasetId, metadataId, request));
     }
@@ -357,6 +449,8 @@ public class DifyDatasetsApi extends BaseApi{
      * @param metadataId 元数据ID
      */
     public void deleteMetadata(String datasetId, String metadataId) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(metadataId, "metadataId");
         log.info("delete dataset metadata: datasetId={}, metadataId={}", datasetId, metadataId);
         DIfyApiServiceGenerator.executeSync(datasetsApiService.deleteMetadata(datasetId, metadataId));
     }
@@ -368,6 +462,8 @@ public class DifyDatasetsApi extends BaseApi{
      * @param action    操作类型（disable/enable）
      */
     public void toggleBuiltInMetadata(String datasetId, String action) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonBlank(action, "action");
         DIfyApiServiceGenerator.executeSync(datasetsApiService.toggleBuiltInMetadata(datasetId, action));
     }
 
@@ -378,6 +474,18 @@ public class DifyDatasetsApi extends BaseApi{
      * @param request   更新文档元数据请求参数
      */
     public void updateDocumentMetadata(String datasetId, UpdateDocumentMetadataRequest request) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonNull(request.getOperationData(), "operationData");
+        request.getOperationData().forEach(operationData -> {
+            ValidationUtils.validateNonBlank(operationData.getDocumentId(), "documentId");
+            ValidationUtils.validateNonNull(operationData.getMetadataList(), "metadataList");
+            operationData.getMetadataList().forEach(metadataItem -> {
+                ValidationUtils.validateNonBlank(metadataItem.getId(), "id");
+                ValidationUtils.validateNonBlank(metadataItem.getName(), "name");
+            });
+        });
+
         log.debug("update document metadata: datasetId={}, request={}", datasetId, request);
         DIfyApiServiceGenerator.executeSync(datasetsApiService.updateDocumentMetadata(datasetId, request));
     }
@@ -389,6 +497,7 @@ public class DifyDatasetsApi extends BaseApi{
      * @return 知识库元数据响应
      */
     public DatasetMetadataResponse listDatasetMetadata(String datasetId) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
         log.debug("query datasets metadata list: datasetId={}", datasetId);
         return DIfyApiServiceGenerator.executeSync(datasetsApiService.listDatasetMetadata(datasetId));
     }
@@ -411,6 +520,10 @@ public class DifyDatasetsApi extends BaseApi{
      * @return 检索响应
      */
     public RetrieveResponse retrieveDataset(String datasetId, RetrieveRequest request) {
+        ValidationUtils.validateNonBlank(datasetId, "datasetId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getQuery(), "query");
+
         log.debug("retrieve dataset: datasetId={}, request={}", datasetId, request);
         return DIfyApiServiceGenerator.executeSync(datasetsApiService.retrieveDataset(datasetId, request));
     }

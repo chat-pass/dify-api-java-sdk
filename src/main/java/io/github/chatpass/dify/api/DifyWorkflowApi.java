@@ -10,6 +10,7 @@ import io.github.chatpass.dify.data.response.WorkflowRunResponse;
 import io.github.chatpass.dify.data.response.WorkflowRunStatusResponse;
 import io.github.chatpass.dify.data.response.WorkflowStopResponse;
 import io.github.chatpass.dify.service.DifyWorkflowApiService;
+import io.github.chatpass.dify.util.ValidationUtils;
 import io.github.chatpass.dify.DIfyApiServiceGenerator;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ResponseBody;
@@ -25,11 +26,24 @@ public class DifyWorkflowApi extends BaseApi{
     }
 
     public WorkflowRunResponse runWorkflow(WorkflowRunRequest request) {
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonNull(request.getInputs(), "inputs");
+        ValidationUtils.validateNonBlank(request.getUser(), "user");
+        ValidationUtils.validateNonNull(request.getResponseMode(), "responseMode");
+
         log.debug("run workflow, request={}", request);
         return DIfyApiServiceGenerator.executeSync(workflowApiService.runWorkflow(request));
     }
 
     public void runWorkflowStream(WorkflowRunRequest request, WorkflowStreamCallback callback) {
+
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonNull(callback, "callback");
+        ValidationUtils.validateNonNull(request.getInputs(), "inputs");
+        ValidationUtils.validateNonBlank(request.getUser(), "user");
+        ValidationUtils.validateNonNull(request.getResponseMode(), "responseMode");
+
+
         log.debug("run stream workflow, request={}", request);
         request.setResponseMode(ResponseMode.STREAMING);
         Call<ResponseBody> call = workflowApiService.runWorkflowStream(request);
@@ -44,6 +58,8 @@ public class DifyWorkflowApi extends BaseApi{
      * @return workflow执行状态响应
      */
     public WorkflowRunStatusResponse getWorkflowRunStatus(String workflowRunId) {
+        ValidationUtils.validateNonBlank(workflowRunId, "workflowRunId");
+
         log.debug("get workflow run status, workflowRunId={}", workflowRunId);
         return DIfyApiServiceGenerator.executeSync(workflowApiService.getWorkflowRunStatus(workflowRunId));
     }
@@ -55,6 +71,10 @@ public class DifyWorkflowApi extends BaseApi{
      * @return 停止操作响应
      */
     public WorkflowStopResponse stopWorkflow(String taskId, SimpleUserRequest request) {
+        ValidationUtils.validateNonBlank(taskId, "taskId");
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getUser(), "user");
+
         log.debug("stop workflow, taskId={}, request={}", taskId, request);
         return DIfyApiServiceGenerator.executeSync(workflowApiService.stopWorkflow(taskId, request));
     }
