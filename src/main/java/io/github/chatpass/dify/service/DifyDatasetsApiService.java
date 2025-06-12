@@ -1,22 +1,28 @@
 package io.github.chatpass.dify.service;
 
+import io.github.chatpass.dify.data.request.datasets.BindingTagRequest;
 import io.github.chatpass.dify.data.request.datasets.CreateDatasetRequest;
 import io.github.chatpass.dify.data.request.datasets.CreateDocumentByTextRequest;
 import io.github.chatpass.dify.data.request.datasets.CreateMetadataRequest;
 import io.github.chatpass.dify.data.request.datasets.CreateSegmentsRequest;
+import io.github.chatpass.dify.data.request.datasets.CreateTagRequest;
+import io.github.chatpass.dify.data.request.datasets.DeleteTagRequest;
 import io.github.chatpass.dify.data.request.datasets.RetrieveRequest;
 import io.github.chatpass.dify.data.request.datasets.SubmitChildChunkRequest;
+import io.github.chatpass.dify.data.request.datasets.UnbindingTagRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateDatasetRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateDocumentByTextRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateDocumentMetadataRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateMetadataRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateSegmentsRequest;
+import io.github.chatpass.dify.data.request.datasets.UpdateTagRequest;
 import io.github.chatpass.dify.data.response.datasets.ChildChunkListResponse;
 import io.github.chatpass.dify.data.response.datasets.ChildChunkResponse;
 import io.github.chatpass.dify.data.response.datasets.CreateSegmentResponse;
 import io.github.chatpass.dify.data.response.datasets.DatasetListResponse;
 import io.github.chatpass.dify.data.response.datasets.DatasetMetadataResponse;
 import io.github.chatpass.dify.data.response.datasets.DatasetResponse;
+import io.github.chatpass.dify.data.response.datasets.DatasetTagsResponse;
 import io.github.chatpass.dify.data.response.datasets.DocumentIndexingStatusResponse;
 import io.github.chatpass.dify.data.response.datasets.DocumentListResponse;
 import io.github.chatpass.dify.data.response.datasets.DocumentResponse;
@@ -25,18 +31,22 @@ import io.github.chatpass.dify.data.response.datasets.EmbeddingModelListResponse
 import io.github.chatpass.dify.data.response.datasets.MetadataResponse;
 import io.github.chatpass.dify.data.response.datasets.RetrieveResponse;
 import io.github.chatpass.dify.data.response.datasets.SegmentListResponse;
+import io.github.chatpass.dify.data.response.datasets.TagResponse;
 import io.github.chatpass.dify.data.response.datasets.UpdateSegmentResponse;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.HTTP;
 import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+
+import java.util.List;
 
 /**
  * 知识库 API
@@ -105,7 +115,6 @@ public interface DifyDatasetsApiService {
     /**
      * 通过文件创建文档
      * @param datasetId 知识库ID
-     * @param request 创建文档请求参数
      * @return 文档详情
      */
     @Multipart
@@ -131,7 +140,6 @@ public interface DifyDatasetsApiService {
      * @param datasetId 知识库ID
      * @param documentId 文档ID
      * @param file 需要上传的文件
-     * @param request 更新文档请求参数
      * @return 知识库详情
      */
     @Multipart
@@ -379,5 +387,60 @@ public interface DifyDatasetsApiService {
     @POST(DATASETS_PATH + "/{dataset_id}/retrieve")
     Call<RetrieveResponse> retrieveDataset(@Path("dataset_id") String datasetId,
                                          @Body RetrieveRequest request);
+
+    /**
+     * 新增知识库类型标签
+     * @param request 新增标签请求参数
+     * @return 标签响应
+     */
+    @POST(DATASETS_PATH + "/tags")
+    Call<TagResponse> createTag(@Body CreateTagRequest request);
+
+    /**
+     * 获取知识库类型标签列表
+     * @return 标签列表
+     */
+    @GET(DATASETS_PATH + "/tags")
+    Call<List<TagResponse>> listTags();
+
+    /**
+     * 修改知识库类型标签名称
+     * @param request 修改标签请求参数
+     * @return 标签响应
+     */
+    @PATCH(DATASETS_PATH + "/tags")
+    Call<TagResponse> updateTag(@Body UpdateTagRequest request);
+
+    /**
+     * 删除知识库类型标签
+     * @param request 删除标签请求参数
+     * @return 无返回内容
+     */
+    @HTTP(method = "DELETE", path = DATASETS_PATH + "/tags", hasBody = true)
+    Call<Void> deleteTag(@Body DeleteTagRequest request);
+
+    /**
+     * 绑定知识库到知识库类型标签
+     * @param request 绑定标签请求参数
+     * @return 无返回内容
+     */
+    @POST(DATASETS_PATH + "/tags/binding")
+    Call<Void> bindingTag(@Body BindingTagRequest request);
+
+    /**
+     * 解绑知识库和知识库类型标签
+     * @param request 解绑标签请求参数
+     * @return 无返回内容
+     */
+    @POST(DATASETS_PATH + "/tags/unbinding")
+    Call<Void> unbindingTag(@Body UnbindingTagRequest request);
+
+    /**
+     * 查询知识库已绑定的标签
+     * @param datasetId 知识库ID
+     * @return 知识库标签响应
+     */
+    @GET(DATASETS_PATH + "/{dataset_id}/tags")
+    Call<DatasetTagsResponse> getDatasetTags(@Path("dataset_id") String datasetId);
 
 }

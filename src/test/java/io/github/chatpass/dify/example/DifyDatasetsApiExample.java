@@ -2,35 +2,43 @@ package io.github.chatpass.dify.example;
 
 import io.github.chatpass.dify.DifyApiFactory;
 import io.github.chatpass.dify.api.DifyDatasetsApi;
+import io.github.chatpass.dify.data.request.datasets.BindingTagRequest;
 import io.github.chatpass.dify.data.request.datasets.CreateDatasetRequest;
 import io.github.chatpass.dify.data.request.datasets.CreateDocumentByTextRequest;
 import io.github.chatpass.dify.data.request.datasets.CreateMetadataRequest;
 import io.github.chatpass.dify.data.request.datasets.CreateSegmentsRequest;
+import io.github.chatpass.dify.data.request.datasets.CreateTagRequest;
+import io.github.chatpass.dify.data.request.datasets.DeleteTagRequest;
 import io.github.chatpass.dify.data.request.datasets.ProcessRule;
 import io.github.chatpass.dify.data.request.datasets.RetrievalModel;
 import io.github.chatpass.dify.data.request.datasets.SubmitChildChunkRequest;
+import io.github.chatpass.dify.data.request.datasets.UnbindingTagRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateDatasetRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateDocumentByTextRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateDocumentMetadataRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateMetadataRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateSegmentsRequest;
+import io.github.chatpass.dify.data.request.datasets.UpdateTagRequest;
 import io.github.chatpass.dify.data.response.datasets.ChildChunkListResponse;
 import io.github.chatpass.dify.data.response.datasets.ChildChunkResponse;
 import io.github.chatpass.dify.data.response.datasets.CreateSegmentResponse;
 import io.github.chatpass.dify.data.response.datasets.DatasetListResponse;
 import io.github.chatpass.dify.data.response.datasets.DatasetMetadataResponse;
 import io.github.chatpass.dify.data.response.datasets.DatasetResponse;
+import io.github.chatpass.dify.data.response.datasets.DatasetTagsResponse;
 import io.github.chatpass.dify.data.response.datasets.DocumentIndexingStatusResponse;
 import io.github.chatpass.dify.data.response.datasets.DocumentListResponse;
 import io.github.chatpass.dify.data.response.datasets.DocumentResponse;
 import io.github.chatpass.dify.data.response.datasets.MetadataResponse;
 import io.github.chatpass.dify.data.response.datasets.SegmentListResponse;
+import io.github.chatpass.dify.data.response.datasets.TagResponse;
 import io.github.chatpass.dify.data.response.datasets.UpdateSegmentResponse;
 import io.github.chatpass.dify.exception.DifyApiError;
 import io.github.chatpass.dify.exception.DifyApiException;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class DifyDatasetsApiExample {
@@ -42,6 +50,7 @@ public class DifyDatasetsApiExample {
     private static String segmentId;
     private static String childChunkId;
     private static String metadataId;
+    private static String tagId;
 
     public static void main(String[] args) {
         final Map<String, String> envs = System.getenv();
@@ -75,10 +84,20 @@ public class DifyDatasetsApiExample {
             toggleBuiltInMetadataExample();;
             updateDocumentMetadataExample();
             listDatasetMetadataExample();
+
+            // 标签管理示例
+            createTagExample();
+            listTagsExample();
+            updateTagExample();
+            bindingTagExample();
+            getDatasetTagsExample();
+            unbindingTagExample();
         } catch (DifyApiException e) {
             e.printStackTrace();
         } finally {
+            deleteTagExample();
             deleteMetadata();
+            deleteChildChunk();
             deleteDocumentSegment();
             deleteDocument();
             deleteDataset();
@@ -92,6 +111,12 @@ public class DifyDatasetsApiExample {
                 .indexingTechnique("high_quality")
                 .permission("only_me")
                 .provider("vendor")
+                .retrievalModel(RetrievalModel.builder()
+                        .searchMethod("hybrid_search")
+                        .rerankingEnable(false)
+                        .scoreThresholdEnabled(false)
+                        .topK(2)
+                        .build())
                 .build();
 
         DatasetResponse response = difyDatasetsApi.createDataset(request);
@@ -169,7 +194,7 @@ public class DifyDatasetsApiExample {
 
     private static void listDocumentsExample() {
         DocumentListResponse response = difyDatasetsApi.listDocuments(datasetId, null, 1, 10);
-        System.out.println("文档列表响应: " + response);
+        System.out.println("知识库文档列表响应: " + response);
     }
 
     private static void listDocumentsWithKeywordExample() {
@@ -180,6 +205,7 @@ public class DifyDatasetsApiExample {
     private static void createDocumentSegmentsExample(){
         CreateSegmentsRequest.Segment segment = CreateSegmentsRequest.Segment.builder()
                 .content("这是一个测试分段的内容")
+                .answer("这是一个测试分段的内容")
                 .keywords(Arrays.asList("测试", "分段"))
                 .build();
 
@@ -300,6 +326,56 @@ public class DifyDatasetsApiExample {
         System.out.println("知识库元数据列表响应: " + response);
     }
 
+    private static void createTagExample() {
+        CreateTagRequest request = CreateTagRequest.builder()
+                .name("测试标签" + System.currentTimeMillis())
+                .build();
+
+        TagResponse response = difyDatasetsApi.createTag(request);
+        System.out.println("创建标签响应: " + response);
+        tagId = response.getId();
+    }
+
+    private static void listTagsExample() {
+        List<TagResponse> response = difyDatasetsApi.listTags();
+        System.out.println("标签列表响应: " + response);
+    }
+
+    private static void updateTagExample() {
+        UpdateTagRequest request = UpdateTagRequest.builder()
+                .name("更新后的测试标签")
+                .tagId(tagId)
+                .build();
+
+        TagResponse response = difyDatasetsApi.updateTag(request);
+        System.out.println("更新标签响应: " + response);
+    }
+
+    private static void bindingTagExample() {
+        BindingTagRequest request = BindingTagRequest.builder()
+                .tagIds(Collections.singletonList(tagId))
+                .targetId(datasetId)
+                .build();
+
+        difyDatasetsApi.bindingTag(request);
+        System.out.println("绑定标签成功");
+    }
+
+    private static void getDatasetTagsExample() {
+        DatasetTagsResponse response = difyDatasetsApi.getDatasetTags(datasetId);
+        System.out.println("查询知识库标签响应: " + response);
+    }
+
+    private static void unbindingTagExample() {
+        UnbindingTagRequest request = UnbindingTagRequest.builder()
+                .tagId(tagId)
+                .targetId(datasetId)
+                .build();
+
+        difyDatasetsApi.unbindingTag(request);
+        System.out.println("解绑标签成功");
+    }
+
     private static void deleteMetadata() {
         if(datasetId == null || metadataId == null) {
             return;
@@ -329,6 +405,19 @@ public class DifyDatasetsApiExample {
         difyDatasetsApi.deleteDocument(datasetId, documentId);
         System.out.println("文档删除成功");
     }
+
+    private static void deleteTagExample() {
+        if(tagId == null) {
+            return;
+        }
+        DeleteTagRequest request = DeleteTagRequest.builder()
+                .tagId(tagId)
+                .build();
+
+        difyDatasetsApi.deleteTag(request);
+        System.out.println("标签删除成功");
+    }
+
     private static void deleteDataset() {
         if(datasetId == null) {
             return;

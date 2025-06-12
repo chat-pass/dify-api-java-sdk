@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 @Builder
@@ -143,6 +142,17 @@ public class DatasetResponse {
     @JsonProperty("external_retrieval_model")
     private ExternalRetrievalModel externalRetrievalModel;
 
+    /**
+     * 文档元数据
+     */
+    @JsonProperty("doc_metadata")
+    private List<MetadataResponse> docMetadata;
+
+    /**
+     * 内置字段是否启用
+     */
+    @JsonProperty("built_in_field_enabled")
+    private Boolean builtInFieldEnabled;
 
     /**
      * 检索模型配置

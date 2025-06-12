@@ -1,20 +1,31 @@
 package io.github.chatpass.dify.api;
 
+import io.github.chatpass.dify.data.request.datasets.BindingTagRequest;
 import io.github.chatpass.dify.data.request.datasets.CreateDatasetRequest;
 import io.github.chatpass.dify.data.request.datasets.CreateDocumentByTextRequest;
 import io.github.chatpass.dify.data.request.datasets.CreateMetadataRequest;
+import io.github.chatpass.dify.data.request.datasets.CreateTagRequest;
+import io.github.chatpass.dify.data.request.datasets.DeleteTagRequest;
+import io.github.chatpass.dify.data.request.datasets.ProcessRule;
+import io.github.chatpass.dify.data.request.datasets.UnbindingTagRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateDatasetRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateDocumentByTextRequest;
 import io.github.chatpass.dify.data.request.datasets.UpdateMetadataRequest;
+import io.github.chatpass.dify.data.request.datasets.UpdateTagRequest;
 import io.github.chatpass.dify.data.response.datasets.DatasetListResponse;
 import io.github.chatpass.dify.data.response.datasets.DatasetResponse;
+import io.github.chatpass.dify.data.response.datasets.DatasetTagsResponse;
 import io.github.chatpass.dify.data.response.datasets.DocumentIndexingStatusResponse;
 import io.github.chatpass.dify.data.response.datasets.DocumentListResponse;
 import io.github.chatpass.dify.data.response.datasets.DocumentResponse;
 import io.github.chatpass.dify.data.response.datasets.EmbeddingModelListResponse;
 import io.github.chatpass.dify.data.response.datasets.MetadataResponse;
+import io.github.chatpass.dify.data.response.datasets.TagResponse;
 import okhttp3.mockwebserver.MockResponse;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -229,6 +240,9 @@ public class DifyDatasetsApiTest extends MockServerUtilsTest {
                 .name("测试文档")
                 .text("这是测试文档的内容")
                 .indexingTechnique("high_quality")
+                .processRule(ProcessRule.builder()
+                        .mode("automatic")
+                        .build())
                 .build();
 
         // 调用方法
@@ -527,4 +541,182 @@ public class DifyDatasetsApiTest extends MockServerUtilsTest {
         // 调用方法 - 删除操作无返回值，只要不抛异常即为成功
         difyDatasetsApi.deleteMetadata("dataset123", "metadata123");
     }
-} 
+
+    @Test
+    public void testCreateTag() {
+        // 设置模拟响应
+        String mockResponseBody = "{\n" +
+                "  \"id\": \"eddb66c2-04a1-4e3a-8cb2-75abd01e12a6\",\n" +
+                "  \"name\": \"testtag1\",\n" +
+                "  \"type\": \"knowledge\",\n" +
+                "  \"binding_count\": 0\n" +
+                "}";
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
+
+        // 创建请求对象
+        CreateTagRequest request = CreateTagRequest.builder()
+                .name("testtag1")
+                .build();
+
+        // 调用方法
+        TagResponse response = difyDatasetsApi.createTag(request);
+
+        // 验证响应
+        assertEquals("eddb66c2-04a1-4e3a-8cb2-75abd01e12a6", response.getId());
+        assertEquals("testtag1", response.getName());
+        assertEquals("knowledge", response.getType());
+        assertEquals(Integer.valueOf(0), response.getBindingCount());
+    }
+
+    @Test
+    public void testListTags() {
+        // 设置模拟响应
+        String mockResponseBody = "[\n" +
+                "  {\n" +
+                "    \"id\": \"a7e1410c-ea16-48d1-9290-39d45f9e273a\",\n" +
+                "    \"name\": \"testtag1\",\n" +
+                "    \"type\": \"knowledge\",\n" +
+                "    \"binding_count\": 0\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"id\": \"b8f2520d-fb27-59e2-a391-40e56fa0384b\",\n" +
+                "    \"name\": \"testtag2\",\n" +
+                "    \"type\": \"knowledge\",\n" +
+                "    \"binding_count\": 2\n" +
+                "  }\n" +
+                "]";
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
+
+        // 调用方法
+        List<TagResponse> response = difyDatasetsApi.listTags();
+
+        // 验证响应
+        assertNotNull(response);
+        assertEquals(2, response.size());
+        assertEquals("a7e1410c-ea16-48d1-9290-39d45f9e273a", response.get(0).getId());
+        assertEquals("testtag1", response.get(0).getName());
+        assertEquals("knowledge", response.get(0).getType());
+        assertEquals(Integer.valueOf(0), response.get(0).getBindingCount());
+        assertEquals("testtag2", response.get(1).getName());
+        assertEquals(Integer.valueOf(2), response.get(1).getBindingCount());
+    }
+
+    @Test
+    public void testUpdateTag() {
+        // 设置模拟响应
+        String mockResponseBody = "{\n" +
+                "  \"id\": \"e1a0a3db-ee34-4e04-842a-81555d5316fd\",\n" +
+                "  \"name\": \"testtag2\",\n" +
+                "  \"type\": \"knowledge\",\n" +
+                "  \"binding_count\": 1\n" +
+                "}";
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
+
+        // 创建请求对象
+        UpdateTagRequest request = UpdateTagRequest.builder()
+                .name("testtag2")
+                .tagId("e1a0a3db-ee34-4e04-842a-81555d5316fd")
+                .build();
+
+        // 调用方法
+        TagResponse response = difyDatasetsApi.updateTag(request);
+
+        // 验证响应
+        assertEquals("e1a0a3db-ee34-4e04-842a-81555d5316fd", response.getId());
+        assertEquals("testtag2", response.getName());
+        assertEquals("knowledge", response.getType());
+        assertEquals(Integer.valueOf(1), response.getBindingCount());
+    }
+
+    @Test
+    public void testDeleteTag() {
+        // 设置模拟响应 - 删除操作通常返回空响应
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(204)
+                .addHeader("Content-Type", "application/json"));
+
+        // 创建请求对象
+        DeleteTagRequest request = DeleteTagRequest.builder()
+                .tagId("e1a0a3db-ee34-4e04-842a-81555d5316fd")
+                .build();
+
+        // 调用方法 - 删除操作无返回值，只要不抛异常即为成功
+        difyDatasetsApi.deleteTag(request);
+    }
+
+    @Test
+    public void testBindingTag() {
+        // 设置模拟响应 - 绑定操作通常返回空响应
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(204)
+                .addHeader("Content-Type", "application/json"));
+
+        // 创建请求对象
+        BindingTagRequest request = BindingTagRequest.builder()
+                .tagIds(Arrays.asList("65cc29be-d072-4e26-adf4-2f727644da29", "1e5348f3-d3ff-42b8-a1b7-0a86d518001a"))
+                .targetId("a932ea9f-fae1-4b2c-9b65-71c56e2cacd6")
+                .build();
+
+        // 调用方法 - 绑定操作无返回值，只要不抛异常即为成功
+        difyDatasetsApi.bindingTag(request);
+    }
+
+    @Test
+    public void testUnbindingTag() {
+        // 设置模拟响应 - 解绑操作通常返回空响应
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(204)
+                .addHeader("Content-Type", "application/json"));
+
+        // 创建请求对象
+        UnbindingTagRequest request = UnbindingTagRequest.builder()
+                .tagId("1e5348f3-d3ff-42b8-a1b7-0a86d518001a")
+                .targetId("a932ea9f-fae1-4b2c-9b65-71c56e2cacd6")
+                .build();
+
+        // 调用方法 - 解绑操作无返回值，只要不抛异常即为成功
+        difyDatasetsApi.unbindingTag(request);
+    }
+
+    @Test
+    public void testGetDatasetTags() {
+        // 设置模拟响应
+        String mockResponseBody = "{\n" +
+                "  \"data\": [\n" +
+                "    {\n" +
+                "      \"id\": \"a7e1410c-ea16-48d1-9290-39d45f9e273a\",\n" +
+                "      \"name\": \"testtag1\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"id\": \"b8f2520d-fb27-59e2-a391-40e56fa0384b\",\n" +
+                "      \"name\": \"testtag2\"\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"total\": 2\n" +
+                "}";
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
+
+        // 调用方法
+        DatasetTagsResponse response = difyDatasetsApi.getDatasetTags("dataset123");
+
+        // 验证响应
+        assertNotNull(response);
+        assertNotNull(response.getData());
+        assertEquals(2, response.getData().size());
+        assertEquals(Integer.valueOf(2), response.getTotal());
+        assertEquals("a7e1410c-ea16-48d1-9290-39d45f9e273a", response.getData().get(0).getId());
+        assertEquals("testtag1", response.getData().get(0).getName());
+        assertEquals("b8f2520d-fb27-59e2-a391-40e56fa0384b", response.getData().get(1).getId());
+        assertEquals("testtag2", response.getData().get(1).getName());
+    }
+
+
+}

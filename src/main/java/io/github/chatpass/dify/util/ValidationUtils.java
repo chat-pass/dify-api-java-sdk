@@ -98,4 +98,39 @@ public final class ValidationUtils {
     public static <T> T validateNonNull(T value, String paramName) {
         return Objects.requireNonNull(value, paramName + " cannot be null");
     }
+
+    /**
+     * 验证字符串最大长度
+     *
+     * @param value     字符串值
+     * @param maxLength 最大长度
+     * @param paramName 参数名称
+     * @return 验证后的字符串值
+     * @throws IllegalArgumentException 如果字符串长度超过最大长度
+     */
+    public static String validateMaxLength(String value, int maxLength, String paramName) {
+        if (value != null && value.length() > maxLength) {
+            throw new IllegalArgumentException(
+                    String.format("%s length cannot exceed %d characters, but was: %d",
+                            paramName, maxLength, value.length()));
+        }
+        return value;
+    }
+
+    /**
+     * 验证列表非空且不为null
+     *
+     * @param list      列表对象
+     * @param paramName 参数名称
+     * @param <T>       列表元素类型
+     * @return 验证后的列表对象
+     * @throws IllegalArgumentException 如果列表为null或为空
+     */
+    public static <T> java.util.List<T> validateNonEmptyList(java.util.List<T> list, String paramName) {
+        Objects.requireNonNull(list, paramName + " cannot be null");
+        if (list.isEmpty()) {
+            throw new IllegalArgumentException(paramName + " cannot be empty");
+        }
+        return list;
+    }
 }

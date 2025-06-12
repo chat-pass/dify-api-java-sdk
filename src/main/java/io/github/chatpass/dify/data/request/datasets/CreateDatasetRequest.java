@@ -58,4 +58,19 @@ public class CreateDatasetRequest {
      */
     @JsonProperty("external_knowledge_id")
     private String externalKnowledgeId;
+
+    /**
+     * Embedding 模型名称
+     */
+    private String embeddingModel;
+
+    /**
+     * Embedding 模型供应商
+     */
+    private String embeddingModelProvider;
+
+    /**
+     * 检索模式
+     */
+    private RetrievalModel retrievalModel;
 }

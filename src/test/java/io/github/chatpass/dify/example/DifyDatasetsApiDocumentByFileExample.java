@@ -89,6 +89,13 @@ public class DifyDatasetsApiDocumentByFileExample {
             DocumentResponse response = difyDatasetsApi.createDocumentByFile(datasetId, file, request);
             System.out.println("通过文件创建文档响应: " + response);
             documentId = response.getDocument().getId();
+
+            try {
+                System.out.println("等待文档索引完成...");
+                Thread.sleep(5000); // 等待5秒
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         } finally {
             // 清理临时文件
             Files.deleteIfExists(tempFile);

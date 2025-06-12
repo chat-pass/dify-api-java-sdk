@@ -13,6 +13,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
 import java.io.File;
+import java.util.List;
 
 @Slf4j
 public class DifyDatasetsApi extends BaseApi{
@@ -526,5 +527,82 @@ public class DifyDatasetsApi extends BaseApi{
 
         log.debug("retrieve dataset: datasetId={}, request={}", datasetId, request);
         return DIfyApiServiceGenerator.executeSync(datasetsApiService.retrieveDataset(datasetId, request));
+    }
+
+    /**
+     * 创建新标签
+     */
+    public TagResponse createTag(CreateTagRequest request) {
+        log.debug("create tag: request={}", request);
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getName(), "name");
+        ValidationUtils.validateMaxLength(request.getName(), 50, "name");
+
+        return DIfyApiServiceGenerator.executeSync(datasetsApiService.createTag(request));
+    }
+
+    /**
+     * 获取标签列表
+     * @return 标签列表响应
+     */
+    public List<TagResponse> listTags() {
+        return DIfyApiServiceGenerator.executeSync(datasetsApiService.listTags());
+    }
+
+    /**
+     * 修改标签名称
+     */
+    public TagResponse updateTag(UpdateTagRequest request) {
+        log.debug("update tag: request={}", request);
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getTagId(), "tagId");
+        ValidationUtils.validateNonBlank(request.getName(), "name");
+        ValidationUtils.validateMaxLength(request.getName(), 50, "name");
+        return DIfyApiServiceGenerator.executeSync(datasetsApiService.updateTag(request));
+    }
+
+    /**
+     * 删除标签
+     */
+    public void deleteTag(DeleteTagRequest request) {
+        log.debug("delete tag: request={}", request);
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getTagId(), "tagId");
+        DIfyApiServiceGenerator.executeSync(datasetsApiService.deleteTag(request));
+    }
+
+    /**
+     * 绑定知识库到标签
+     * @param request 绑定标签请求参数
+     */
+    public void bindingTag(BindingTagRequest request) {
+        log.debug("binding tag: request={}", request);
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonEmptyList(request.getTagIds(), "tagIds");
+        ValidationUtils.validateNonBlank(request.getTargetId(), "targetId");
+
+        DIfyApiServiceGenerator.executeSync(datasetsApiService.bindingTag(request));
+    }
+
+    /**
+     * 解绑知识库和标签
+     * @param request 解绑标签请求参数
+     */
+    public void unbindingTag(UnbindingTagRequest request) {
+        log.debug("unbinding tag: request={}", request);
+        ValidationUtils.validateNonNull(request, "request");
+        ValidationUtils.validateNonBlank(request.getTagId(), "tagId");
+        ValidationUtils.validateNonBlank(request.getTargetId(), "targetId");
+        DIfyApiServiceGenerator.executeSync(datasetsApiService.unbindingTag(request));
+    }
+
+    /**
+     * 查询知识库已绑定的标签
+     * @param datasetId 知识库ID
+     * @return 标签列表响应
+     */
+    public DatasetTagsResponse getDatasetTags(String datasetId) {
+        log.debug("get dataset tags: datasetId={}", datasetId);
+        return DIfyApiServiceGenerator.executeSync(datasetsApiService.getDatasetTags(datasetId));
     }
 }
