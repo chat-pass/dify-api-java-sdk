@@ -6,7 +6,7 @@
 
     <groupId>io.github.chat-pass</groupId>
     <artifactId>dify-api-java-sdk</artifactId>
-    <version>1.0.1.FINAL</version>
+    <version>1.0.2.FINAL</version>
     <name>dify-api-java-sdk</name>
     <url>https://github.com/chat-pass/dify-api-java-sdk</url>
     <description>A Java SDK for Dify API</description>
